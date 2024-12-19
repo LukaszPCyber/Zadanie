@@ -62,23 +62,38 @@ ax.set_xlabel("Wiek")
 ax.set_ylabel("Liczba klientów")
 st.pyplot(fig)
 
-# Dynamiczne mapowanie lokalizacji na współrzędne
-st.write("### Mapa lokalizacji zakupów")
-
-# Przenieś obiekt Nominatim poza funkcję
-geolocator = Nominatim(user_agent="shopping_trends_app")
-
-def get_coordinates(location):
-    try:
-        loc = geolocator.geocode(location)
-        return [loc.latitude, loc.longitude] if loc else None
-    except Exception as e:
-        st.warning(f"Błąd podczas geokodowania lokalizacji '{location}': {e}")
-        return None
+# Statyczne współrzędne dla stanów USA
+state_coordinates = {
+    "Kentucky": [37.8393, -84.2700],
+    "Maine": [45.2538, -69.4455],
+    "Massachusetts": [42.4072, -71.3824],
+    "Rhode Island": [41.5801, -71.4774],
+    "Oregon": [43.8041, -120.5542],
+    "Wyoming": [43.0760, -107.2903],
+    "Louisiana": [30.9843, -91.9623],
+    "West Virginia": [38.5976, -80.4549],
+    "Missouri": [37.9643, -91.8318],
+    "Arkansas": [34.7465, -92.2896],
+    "Hawaii": [20.7967, -156.3319],
+    "Alabama": [32.3182, -86.9023],
+    "Mississippi": [32.3547, -89.3985],
+    "Montana": [46.8797, -110.3626],
+    "North Carolina": [35.7596, -79.0193],
+    "California": [36.7783, -119.4179],
+    "Oklahoma": [35.0078, -97.0929],
+    "Florida": [27.9944, -81.7603],
+    "Texas": [31.9686, -99.9018],
+    "Nevada": [38.8026, -116.4194],
+    "Kansas": [39.0119, -98.4842],
+    "Colorado": [39.5501, -105.7821],
+    "North Dakota": [47.5515, -101.0020],
+    "Illinois": [40.6331, -89.3985],
+    "Indiana": [40.2672, -86.1349]
+}
 
 # Dodanie współrzędnych do danych
 filtered_data = filtered_data.copy()
-filtered_data["Coordinates"] = filtered_data["Location"].apply(get_coordinates)
+filtered_data["Coordinates"] = filtered_data["Location"].map(state_coordinates)
 filtered_data = filtered_data.dropna(subset=["Coordinates"])
 
 # Przygotowanie danych dla pydeck
