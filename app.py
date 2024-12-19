@@ -61,3 +61,12 @@ filtered_data["Age"].hist(bins=20, ax=ax)
 ax.set_xlabel("Wiek")
 ax.set_ylabel("Liczba klientów")
 st.pyplot(fig)
+
+# Podsumowanie statystyk klientów
+st.write("### Podsumowanie klientów")
+summary = {
+    "Średni wiek": filtered_data["Age"].mean(),
+    "Liczba klientów": filtered_data["Customer ID"].nunique(),
+    "Najpopularniejsza metoda płatności": filtered_data["Payment Method"].mode()[0],
+}
+st.json(summary)
