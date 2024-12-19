@@ -37,6 +37,22 @@ ax.set_xlabel("Kategoria")
 ax.set_ylabel("Liczba zakupów")
 st.pyplot(fig)
 
+# Nowy wykres: Rozkład metod płatności
+st.write("### Rozkład metod płatności")
+
+# Zliczanie metod płatności
+payment_counts = filtered_data["Payment Method"].value_counts()
+
+# Wykres kołowy metod płatności
+fig, ax = plt.subplots()
+payment_counts.plot(kind="pie", ax=ax, autopct="%1.1f%%", startangle=90, cmap="viridis")
+ax.set_ylabel("")  # Usunięcie domyślnego opisu osi
+ax.set_title("Procentowy rozkład metod płatności")
+
+# Wyświetlenie wykresu
+st.pyplot(fig)
+
+
 # Wykres 2: Średnia kwota zakupów wg sezonu
 st.write("### Średnia kwota zakupów wg sezonu")
 season_mean = filtered_data.groupby("Season")["Purchase Amount (USD)"].mean()
