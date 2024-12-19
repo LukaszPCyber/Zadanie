@@ -70,15 +70,47 @@ ax.set_xlabel("Wiek")
 ax.set_ylabel("Liczba klientów")
 st.pyplot(fig)
 
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+from geopy.geocoders import Nominatim
+import pydeck as pdk
+
+# Wczytaj dane
+@st.cache_data
+def load_data():
+    return pd.read_csv('shopping_trends.csv')
+
+data = load_data()
+
+# Ustawienia strony
+st.title("Shopping Trends Dashboard")
+st.sidebar.title("Opcje analizy")
+
+# Filtry
+age_filter = st.sidebar.slider("Wiek klienta", int(data["Age"].min()), int(data["Age"].max()), (18, 60))
+category_filter = st.sidebar.multiselect("Kategorie produktów", data["Category"].unique(), data["Category"].unique())
+
+# Filtruj dane
+filtered_data = data[(data["Age"] >= age_filter[0]) & 
+                     (data["Age"] <= age_filter[1]) & 
+                     (data["Category"].isin(category_filter))]
+
+# Wyświetlanie danych
+st.write("### Filtrowane dane", filtered_data)
+
 # Dynamiczne mapowanie lokalizacji na współrzędne
 st.write("### Mapa lokalizacji zakupów")
 
+# Przenieś obiekt Nominatim poza funkcję
+geolocator = Nominatim(user_agent="shopping_trends_app")
+
 def get_coordinates(location):
-    geolocator = Nominatim(user_agent="shopping_trends_app")
     try:
         loc = geolocator.geocode(location)
         return [loc.latitude, loc.longitude] if loc else None
-    except:
+    except Exception as e:
+        st.warning(f"Błąd podczas geokodowania lokalizacji '{location}': {e}")
         return None
 
 # Dodanie współrzędnych do danych
@@ -87,7 +119,6 @@ filtered_data["Coordinates"] = filtered_data["Location"].apply(get_coordinates)
 filtered_data = filtered_data.dropna(subset=["Coordinates"])
 
 # Przygotowanie danych dla pydeck
-import pydeck as pdk
 map_data = pd.DataFrame(
     filtered_data["Coordinates"].tolist(),
     columns=["lat", "lon"]
