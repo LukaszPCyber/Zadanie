@@ -101,35 +101,27 @@ def display_customer_summary(filtered_data):
 # Wywołanie funkcji podsumowania
 display_customer_summary(filtered_data)
 
-# Animowana mapa zakupów
-st.write("### Animowana mapa zakupów klientów")
+# Wykres trendów zakupowych w czasie
+st.write("### Trendy zakupowe w czasie")
+
 if not filtered_data.empty:
-    # Przygotowanie danych dla pydeck
-    map_data = filtered_data.copy()
-    map_data["Coordinates"] = map_data["Location"].map(state_coordinates)  # Dodanie współrzędnych
-    map_data = map_data.dropna(subset=["Coordinates"])  # Usunięcie pustych wierszy
-    map_data[["lat", "lon"]] = pd.DataFrame(map_data["Coordinates"].tolist(), index=map_data.index)
+    # Upewnijmy się, że kolumna z datą ma odpowiedni format
+    if "Date" in filtered_data.columns:
+        filtered_data["Date"] = pd.to_datetime(filtered_data["Date"])
 
-    # Pydeck Layer
-    scatter_layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=map_data,
-        get_position="[lon, lat]",
-        get_radius="Purchase Amount (USD)",  # Promień zależny od kwoty zakupu
-        get_color="[200, 30, 0, 160]",
-        pickable=True,
-    )
+        # Grupowanie danych wg miesiąca
+        filtered_data["Month"] = filtered_data["Date"].dt.to_period("M")
+        monthly_trends = filtered_data.groupby("Month")["Purchase Amount (USD)"].sum()
 
-    # Ustawienia widoku
-    view_state = pdk.ViewState(
-        latitude=37.0902,
-        longitude=-95.7129,
-        zoom=3,
-        pitch=50,
-    )
-
-    # Wyświetlenie mapy
-    r = pdk.Deck(layers=[scatter_layer], initial_view_state=view_state, tooltip={"text": "Zakup: {Purchase Amount (USD)} USD"})
-    st.pydeck_chart(r)
+        # Rysowanie wykresu
+        fig, ax = plt.subplots()
+        monthly_trends.plot(kind="line", ax=ax, marker='o')
+        ax.set_xlabel("Miesiąc")
+        ax.set_ylabel("Łączna kwota zakupów (USD)")
+        ax.set_title("Łączna kwota zakupów w czasie")
+        plt.xticks(rotation=45)
+        st.pyplot(fig)
+    else:
+        st.write("Brak kolumny 'Date' w danych. Nie można stworzyć wykresu trendów zakupowych.")
 else:
-    st.write("Brak danych do wizualizacji na mapie.")
+    st.write("Brak danych do analizy trendów zakupowych w czasie.")
