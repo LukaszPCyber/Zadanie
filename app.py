@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from geopy.geocoders import Nominatim
 import pydeck as pdk
 
 # Wczytaj dane
@@ -36,31 +35,40 @@ ax.set_xlabel("Kategoria")
 ax.set_ylabel("Liczba zakupów")
 st.pyplot(fig)
 
-# Nowy wykres: Rozkład metod płatności
+# Wykres 2: Rozkład metod płatności
 st.write("### Rozkład metod płatności")
-payment_counts = filtered_data["Payment Method"].value_counts()
-fig, ax = plt.subplots()
-payment_counts.plot(kind="pie", ax=ax, autopct="%1.1f%%", startangle=90, cmap="viridis")
-ax.set_ylabel("")  # Usunięcie domyślnego opisu osi
-ax.set_title("Procentowy rozkład metod płatności")
-st.pyplot(fig)
+if not filtered_data.empty:
+    payment_counts = filtered_data["Payment Method"].value_counts()
+    fig, ax = plt.subplots()
+    payment_counts.plot(kind="pie", ax=ax, autopct="%1.1f%%", startangle=90, cmap="viridis")
+    ax.set_ylabel("")  # Usunięcie domyślnego opisu osi
+    ax.set_title("Procentowy rozkład metod płatności")
+    st.pyplot(fig)
+else:
+    st.write("Brak danych do analizy rozkładu metod płatności.")
 
-# Wykres 2: Średnia kwota zakupów wg sezonu
+# Wykres 3: Średnia kwota zakupów wg sezonu
 st.write("### Średnia kwota zakupów wg sezonu")
-season_mean = filtered_data.groupby("Season")["Purchase Amount (USD)"].mean()
-fig, ax = plt.subplots()
-season_mean.plot(kind="bar", ax=ax)
-ax.set_xlabel("Sezon")
-ax.set_ylabel("Średnia kwota zakupów (USD)")
-st.pyplot(fig)
+if not filtered_data.empty:
+    season_mean = filtered_data.groupby("Season")["Purchase Amount (USD)"].mean()
+    fig, ax = plt.subplots()
+    season_mean.plot(kind="bar", ax=ax)
+    ax.set_xlabel("Sezon")
+    ax.set_ylabel("Średnia kwota zakupów (USD)")
+    st.pyplot(fig)
+else:
+    st.write("Brak danych do analizy kwot zakupów wg sezonu.")
 
-# Wykres 3: Liczba klientów wg wieku
+# Wykres 4: Liczba klientów wg wieku
 st.write("### Liczba klientów wg wieku")
-fig, ax = plt.subplots()
-filtered_data["Age"].hist(bins=20, ax=ax)
-ax.set_xlabel("Wiek")
-ax.set_ylabel("Liczba klientów")
-st.pyplot(fig)
+if not filtered_data.empty:
+    fig, ax = plt.subplots()
+    filtered_data["Age"].hist(bins=20, ax=ax)
+    ax.set_xlabel("Wiek")
+    ax.set_ylabel("Liczba klientów")
+    st.pyplot(fig)
+else:
+    st.write("Brak danych do analizy liczby klientów wg wieku.")
 
 # Podsumowanie statystyk klientów
 def display_customer_summary(filtered_data):
@@ -72,19 +80,23 @@ def display_customer_summary(filtered_data):
     """
     st.write("### Podsumowanie klientów")
 
-    # Obliczanie statystyk
-    avg_age = filtered_data["Age"].mean()
-    total_customers = filtered_data["Customer ID"].nunique()
-    popular_payment = filtered_data["Payment Method"].mode()[0]
+    if not filtered_data.empty:
+        # Obliczanie statystyk
+        avg_age = filtered_data["Age"].mean()
+        total_customers = filtered_data["Customer ID"].nunique()
+        popular_payment = filtered_data["Payment Method"].mode()[0]
 
-    # Przygotowanie tabeli do wyświetlenia
-    summary_data = {
-        "Statystyka": ["Średni wiek", "Liczba klientów", "Najpopularniejsza metoda płatności"],
-        "Wartość": [f"{avg_age:.2f} lat", total_customers, popular_payment],
-    }
-    summary_table = pd.DataFrame(summary_data)
+        # Przygotowanie tabeli do wyświetlenia
+        summary_data = {
+            "Statystyka": ["Średni wiek", "Liczba klientów", "Najpopularniejsza metoda płatności"],
+            "Wartość": [f"{avg_age:.2f} lat", total_customers, popular_payment],
+        }
+        summary_table = pd.DataFrame(summary_data)
 
-    # Wyświetlanie tabeli
-    st.table(summary_table)
+        # Wyświetlanie tabeli
+        st.table(summary_table)
+    else:
+        st.write("Brak danych do podsumowania statystyk klientów.")
 
-
+# Wywołanie funkcji podsumowania
+display_customer_summary(filtered_data)
