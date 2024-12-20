@@ -63,10 +63,28 @@ ax.set_ylabel("Liczba klientów")
 st.pyplot(fig)
 
 # Podsumowanie statystyk klientów
-st.write("### Podsumowanie klientów")
-summary = {
-    "Średni wiek": filtered_data["Age"].mean(),
-    "Liczba klientów": filtered_data["Customer ID"].nunique(),
-    "Najpopularniejsza metoda płatności": filtered_data["Payment Method"].mode()[0],
-}
-st.json(summary)
+def display_customer_summary(filtered_data):
+    """
+    Wyświetla podsumowanie statystyk klientów w formie tabeli.
+
+    Args:
+    - filtered_data (pd.DataFrame): Dane po zastosowaniu filtrów.
+    """
+    st.write("### Podsumowanie klientów")
+
+    # Obliczanie statystyk
+    avg_age = filtered_data["Age"].mean()
+    total_customers = filtered_data["Customer ID"].nunique()
+    popular_payment = filtered_data["Payment Method"].mode()[0]
+
+    # Przygotowanie tabeli do wyświetlenia
+    summary_data = {
+        "Statystyka": ["Średni wiek", "Liczba klientów", "Najpopularniejsza metoda płatności"],
+        "Wartość": [f"{avg_age:.2f} lat", total_customers, popular_payment],
+    }
+    summary_table = pd.DataFrame(summary_data)
+
+    # Wyświetlanie tabeli
+    st.table(summary_table)
+
+
