@@ -100,3 +100,36 @@ def display_customer_summary(filtered_data):
 
 # Wywołanie funkcji podsumowania
 display_customer_summary(filtered_data)
+
+# Animowana mapa zakupów
+st.write("### Animowana mapa zakupów klientów")
+if not filtered_data.empty:
+    # Przygotowanie danych dla pydeck
+    map_data = filtered_data.copy()
+    map_data["Coordinates"] = map_data["Location"].map(state_coordinates)  # Dodanie współrzędnych
+    map_data = map_data.dropna(subset=["Coordinates"])  # Usunięcie pustych wierszy
+    map_data[["lat", "lon"]] = pd.DataFrame(map_data["Coordinates"].tolist(), index=map_data.index)
+
+    # Pydeck Layer
+    scatter_layer = pdk.Layer(
+        "ScatterplotLayer",
+        data=map_data,
+        get_position="[lon, lat]",
+        get_radius="Purchase Amount (USD)",  # Promień zależny od kwoty zakupu
+        get_color="[200, 30, 0, 160]",
+        pickable=True,
+    )
+
+    # Ustawienia widoku
+    view_state = pdk.ViewState(
+        latitude=37.0902,
+        longitude=-95.7129,
+        zoom=3,
+        pitch=50,
+    )
+
+    # Wyświetlenie mapy
+    r = pdk.Deck(layers=[scatter_layer], initial_view_state=view_state, tooltip={"text": "Zakup: {Purchase Amount (USD)} USD"})
+    st.pydeck_chart(r)
+else:
+    st.write("Brak danych do wizualizacji na mapie.")
