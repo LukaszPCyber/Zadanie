@@ -101,27 +101,29 @@ def display_customer_summary(filtered_data):
 # Wywołanie funkcji podsumowania
 display_customer_summary(filtered_data)
 
-# Wykres trendów zakupowych w czasie
-st.write("### Trendy zakupowe w czasie")
+# Analiza ocen klientów
+st.write("### Analiza ocen klientów")
 
 if not filtered_data.empty:
-    # Upewnijmy się, że kolumna z datą ma odpowiedni format
-    if "Date" in filtered_data.columns:
-        filtered_data["Date"] = pd.to_datetime(filtered_data["Date"])
+    # Zakładamy, że ocena 4+ jest pozytywna, 3 neutralna, a poniżej 3 negatywna
+    positive = filtered_data[filtered_data["Review Rating"] >= 4].shape[0]
+    neutral = filtered_data[filtered_data["Review Rating"] == 3].shape[0]
+    negative = filtered_data[filtered_data["Review Rating"] < 3].shape[0]
 
-        # Grupowanie danych wg miesiąca
-        filtered_data["Month"] = filtered_data["Date"].dt.to_period("M")
-        monthly_trends = filtered_data.groupby("Month")["Purchase Amount (USD)"].sum()
-
-        # Rysowanie wykresu
-        fig, ax = plt.subplots()
-        monthly_trends.plot(kind="line", ax=ax, marker='o')
-        ax.set_xlabel("Miesiąc")
-        ax.set_ylabel("Łączna kwota zakupów (USD)")
-        ax.set_title("Łączna kwota zakupów w czasie")
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
-    else:
-        st.write("Brak kolumny 'Date' w danych. Nie można stworzyć wykresu trendów zakupowych.")
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots()
+    labels = ["Pozytywne", "Neutralne", "Negatywne"]
+    sizes = [positive, neutral, negative]
+    colors = ["#4CAF50", "#FFC107", "#F44336"]
+    ax.pie(
+        sizes,
+        labels=labels,
+        autopct="%1.1f%%",
+        colors=colors,
+        startangle=140,
+    )
+    ax.axis("equal")  # Equal aspect ratio ensures the pie is drawn as a circle.
+    ax.set_title("Procentowy rozkład ocen klientów")
+    st.pyplot(fig)
 else:
-    st.write("Brak danych do analizy trendów zakupowych w czasie.")
+    st.write("Brak danych do analizy ocen klientów.")
